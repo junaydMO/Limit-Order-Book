@@ -18,6 +18,16 @@ struct Order
     int nextIndex{-1};
 };
 
+// Stores information about the order to confirm an order or a cancellation has taken place
+struct OrderReceipt
+{
+    bool complete{false};
+    bool bid{false};
+    int amount{-1};
+    int price{-1};
+    int orderIndex{-1};
+};
+
 struct PriceTrack
 {
     int headIndex{-1};
@@ -41,9 +51,10 @@ private:
     void AddAsk(Order order)
     {
         int priceIndex = order.price - lowestPrice;
+
+        // Puts the order in the slot and updates the queue
         int assignedPoolIndex = poolQueue.front();
         poolQueue.pop();
-
         orderPool[assignedPoolIndex] = order;
     
         if(askTracker[priceIndex].tailIndex == -1)
@@ -68,27 +79,27 @@ private:
     {
         Order cancelledOrder = orderPool[orderIndex];
         int orderSize = orderPool[orderIndex].amount;
-        if(askTracker[cancelledOrder.price - lowestPrice].tailIndex == orderIndex)
+        int priceIndex = cancelledOrder.price - lowestPrice;
+        
+        if(askTracker[priceIndex].headIndex == askTracker[priceIndex].headIndex == orderIndex)
         {
-            // If the order is the tail
-            orderPool[orderPool[orderIndex].lastIndex].nextIndex = -1;
-            askTracker[cancelledOrder.price - lowestPrice].tailIndex = orderPool[orderIndex].lastIndex;
+            // If the only entry
         }
-        else if(askTracker[cancelledOrder.price - lowestPrice].headIndex == orderIndex)
+        else if(askTracker[priceIndex].headIndex == orderIndex)
         {
-            // If the order is the head
-            orderPool[orderPool[orderIndex].nextIndex].lastIndex = -1;
-            askTracker[cancelledOrder.price - lowestPrice].headIndex = orderPool[orderIndex].nextIndex;
+            // If head
+        }
+        else if(askTracker[priceIndex].tailIndex = orderIndex)
+        {
+            // If tail
         }
         else
         {
-            // If the order is in the middle
-            int next = orderPool[orderIndex].nextIndex;
-            int before = orderPool[orderIndex].lastIndex;
-            orderPool[before].nextIndex = next;
-            orderPool[next].lastIndex = before;
+            // If in the middle
         }
-        askTracker[cancelledOrder.price].size -= orderSize;
+        
+        askTracker[priceIndex].size -= orderSize;
+        poolQueue.push(orderIndex);
     }
 
 public:
@@ -98,7 +109,7 @@ public:
         lowestPrice = minPrice;
         highestPrice = maxPrice;
         
-        int amountOfPrices = maxPrice - minPrice;
+        int amountOfPrices = maxPrice - minPrice + 1;
         poolSize =  amountOfPrices * ordersPerLevel;
 
         askTracker = new PriceTrack[amountOfPrices];
@@ -110,7 +121,7 @@ public:
         }
     }
 
-    // Remember to delete anything like this
+    // Remember to use this to delete anything like that
     ~OrderBook()
     {
         delete[] askTracker;
@@ -143,6 +154,10 @@ public:
                 // Cancel Ask
                 RemoveAsk(cancelledIndex);
             }
+        }
+        else
+        {
+            // Tut tut tut someone sent an invalid order!
         }
     }
 };
