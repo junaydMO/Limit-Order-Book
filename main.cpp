@@ -1,6 +1,8 @@
 #include <iostream>
 #include <queue>
 
+// Holds the order book logic for adding and filling orders, accounts & authentication must be handled by an API that is not here.
+
 struct Order
 {
     // Cancel flag and cancel data
@@ -84,18 +86,26 @@ private:
         if(askTracker[priceIndex].headIndex == askTracker[priceIndex].headIndex == orderIndex)
         {
             // If the only entry
+            askTracker[priceIndex].headIndex = -1;
+            askTracker[priceIndex].tailIndex = -1;
         }
         else if(askTracker[priceIndex].headIndex == orderIndex)
         {
             // If head
+            askTracker[priceIndex].headIndex = cancelledOrder.nextIndex;
+            orderPool[cancelledOrder.nextIndex].lastIndex = -1;
         }
         else if(askTracker[priceIndex].tailIndex = orderIndex)
         {
             // If tail
+            askTracker[priceIndex].tailIndex = cancelledOrder.lastIndex;
+            orderPool[cancelledOrder.lastIndex].nextIndex = -1;
         }
         else
         {
             // If in the middle
+            orderPool[cancelledOrder.lastIndex].nextIndex = cancelledOrder.nextIndex;
+            orderPool[cancelledOrder.nextIndex].lastIndex = cancelledOrder.lastIndex;
         }
         
         askTracker[priceIndex].size -= orderSize;
@@ -127,6 +137,7 @@ public:
         delete[] askTracker;
         delete[] orderPool;
     }
+
 
     void AddOrder(Order incomingOrder)
     {
